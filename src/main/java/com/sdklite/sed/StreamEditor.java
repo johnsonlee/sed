@@ -169,6 +169,22 @@ public class StreamEditor implements Closeable {
     }
 
     /**
+     * Reads the next float but not change the file pointer position
+     * 
+     * @return The next float
+     * @throws IOException
+     *             if error occurred
+     */
+    public float peekFloat() throws IOException {
+        final long p = tell();
+        try {
+            return Float.intBitsToFloat(readInt());
+        } finally {
+            seek(p);
+        }
+    }
+
+    /**
      * Reads the next long but not change the file pointer position
      * 
      * @return The next long
@@ -179,6 +195,22 @@ public class StreamEditor implements Closeable {
         final long p = tell();
         try {
             return readLong();
+        } finally {
+            seek(p);
+        }
+    }
+
+    /**
+     * Reads the next double but not change the file pointer position
+     * 
+     * @return The next double
+     * @throws IOException
+     *             if error occurred
+     */
+    public double peekDouble() throws IOException {
+        final long p = tell();
+        try {
+            return Double.longBitsToDouble(readLong());
         } finally {
             seek(p);
         }
@@ -293,6 +325,17 @@ public class StreamEditor implements Closeable {
     }
 
     /**
+     * Reads the next float
+     * 
+     * @return The next float
+     * @throws IOException
+     *             if error occurred
+     */
+    public float readFloat() throws IOException {
+        return Float.intBitsToFloat(readInt());
+    }
+
+    /**
      * Reads the next long
      * 
      * @return The next long
@@ -304,6 +347,17 @@ public class StreamEditor implements Closeable {
         this.raf.read(buffer.array());
         buffer.rewind();
         return buffer.getLong();
+    }
+
+    /**
+     * Reads the next double
+     * 
+     * @return The next double
+     * @throws IOException
+     *             if error occurred
+     */
+    public double readDouble() throws IOException {
+        return Double.longBitsToDouble(readLong());
     }
 
     /**
@@ -350,40 +404,52 @@ public class StreamEditor implements Closeable {
     /**
      * Writes the specified short value into the parsing file
      * 
-     * @param b
+     * @param v
      *            The short value to be written
      * @throws IOException
      *             if error occurred
      */
-    public void writeShort(final short b) throws IOException {
+    public void writeShort(final short v) throws IOException {
         final ByteBuffer buffer = ByteBuffer.allocate(2).order(this.byteOrder);
-        this.raf.write(buffer.putShort(b).array());
+        this.raf.write(buffer.putShort(v).array());
     }
 
     /**
      * Writes the specified int value into the parsing file
      * 
-     * @param b
+     * @param v
      *            The int value to be written
      * @throws IOException
      *             if error occurred
      */
-    public void writeInt(final int b) throws IOException {
+    public void writeInt(final int v) throws IOException {
         final ByteBuffer buffer = ByteBuffer.allocate(4).order(this.byteOrder);
-        this.raf.write(buffer.putInt(b).array());
+        this.raf.write(buffer.putInt(v).array());
+    }
+
+    /**
+     * Writes the specified float value into the parsing file
+     * 
+     * @param v
+     *            The float value to be written
+     * @throws IOException
+     *             if error occurred
+     */
+    public void writeFloat(final float v) throws IOException {
+        writeInt(Float.floatToIntBits(v));
     }
 
     /**
      * Writes the specified long value into the parsing file
      * 
-     * @param b
+     * @param v
      *            The long value to be written
      * @throws IOException
      *             if error occurred
      */
-    public void writeLong(final long b) throws IOException {
+    public void writeLong(final long v) throws IOException {
         final ByteBuffer buffer = ByteBuffer.allocate(8).order(this.byteOrder);
-        this.raf.write(buffer.putLong(b).array());
+        this.raf.write(buffer.putLong(v).array());
     }
 
     /**
