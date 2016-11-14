@@ -10,7 +10,7 @@
   </parent>
 
   <artifactId>sed</artifactId>
-  <version>0.0.1</version>
+  <version>0.0.2</version>
 
   <name>Stream Editor</name>
   <url>http://sed.sdklite.com</url>
