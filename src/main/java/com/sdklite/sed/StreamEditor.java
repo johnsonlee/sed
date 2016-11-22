@@ -1,12 +1,15 @@
 package com.sdklite.sed;
 
 import java.io.Closeable;
+import java.io.EOFException;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
+
+import org.eclipse.jetty.io.EofException;
 
 /**
  * Represents a stream editor, it could be used for binary file direct reading
@@ -111,10 +114,42 @@ public class StreamEditor implements Closeable {
      * @throws IOException
      *             if error occurred
      */
-    public byte peek() throws IOException {
+    public int peek() throws IOException {
         final long p = tell();
         try {
-            return (byte) read();
+            return read();
+        } finally {
+            seek(p);
+        }
+    }
+
+    /**
+     * Reads the next byte but not change the file pointer position
+     * 
+     * @return The next byte
+     * @throws IOException
+     *             if error occurred
+     */
+    public byte peekByte() throws IOException {
+        final long p = tell();
+        try {
+            return readByte();
+        } finally {
+            seek(p);
+        }
+    }
+
+    /**
+     * Reads the next unsigned byte but not change the file pointer position
+     * 
+     * @return The next unsigned byte
+     * @throws IOException
+     *             if error occurred
+     */
+    public int peekUnsignedByte() throws IOException {
+        final long p = tell();
+        try {
+            return read();
         } finally {
             seek(p);
         }
@@ -147,6 +182,22 @@ public class StreamEditor implements Closeable {
         final long p = tell();
         try {
             return readShort();
+        } finally {
+            seek(p);
+        }
+    }
+
+    /**
+     * Reads the next unsigned short but not change the file pointer position
+     * 
+     * @return The next short
+     * @throws IOException
+     *             if error occurred
+     */
+    public int peekUnsignedShort() throws IOException {
+        final long p = tell();
+        try {
+            return readUnsignedShort();
         } finally {
             seek(p);
         }
@@ -224,7 +275,11 @@ public class StreamEditor implements Closeable {
      *             if error occurred
      */
     public int read() throws IOException {
-        return this.raf.read();
+        final int b = this.raf.read();
+        if (-1 == b) {
+            throw new EOFException();
+        }
+        return b;
     }
 
     /**
@@ -237,7 +292,11 @@ public class StreamEditor implements Closeable {
      *             if error occurred
      */
     public int read(final ByteBuffer buffer) throws IOException {
-        return this.raf.read(buffer.array());
+        final int nbytes = this.raf.read(buffer.array());
+        if (-1 == nbytes) {
+            throw new EOFException();
+        }
+        return nbytes;
     }
 
     /**
@@ -250,7 +309,11 @@ public class StreamEditor implements Closeable {
      *             if error occurred
      */
     public int read(final byte[] buffer) throws IOException {
-        return this.raf.read(buffer);
+        final int nbytes = this.raf.read(buffer);
+        if (-1 == nbytes) {
+            throw new EOFException();
+        }
+        return nbytes;
     }
 
     /**
@@ -268,18 +331,40 @@ public class StreamEditor implements Closeable {
      *             if error occurred
      */
     public int read(final byte[] buf, final int off, final int len) throws IOException {
-        return this.raf.read(buf, off, len);
+        final int nbytes = this.raf.read(buf, off, len);
+        if (-1 == nbytes) {
+            throw new EOFException();
+        }
+        return nbytes;
     }
 
     /**
-     * An equivalent of {@link #read()}
+     * Reads the next byte
      * 
      * @return The next byte
      * @throws IOException
      *             if error occurred
      */
     public byte readByte() throws IOException {
-        return (byte) read();
+        final int b = read();
+        if (-1 == b) {
+            throw new EOFException();
+        }
+        return (byte) b;
+    }
+
+    /**
+     * Reads the next unsigned byte
+     * 
+     * @return The next unsigned byte
+     * @throws IOException
+     */
+    public int readUnsignedByte() throws IOException {
+        final int b = this.read();
+        if (-1 == b) {
+            throw new EOFException();
+        }
+        return b;
     }
 
     /**
@@ -291,7 +376,9 @@ public class StreamEditor implements Closeable {
      */
     public char readChar() throws IOException {
         final ByteBuffer buffer = ByteBuffer.allocate(2).order(this.byteOrder);
-        this.raf.read(buffer.array());
+        if (-1 == this.raf.read(buffer.array())) {
+            throw new EofException();
+        }
         buffer.rewind();
         return buffer.getChar();
     }
@@ -305,9 +392,23 @@ public class StreamEditor implements Closeable {
      */
     public short readShort() throws IOException {
         final ByteBuffer buffer = ByteBuffer.allocate(2).order(this.byteOrder);
-        this.raf.read(buffer.array());
+        if (-1 == this.raf.read(buffer.array())) {
+            throw new EOFException();
+        }
         buffer.rewind();
         return buffer.getShort();
+    }
+
+    /**
+     * Reads the next unsigned short
+     * 
+     * @return The next unsigned short
+     * @throws IOException
+     */
+    public int readUnsignedShort() throws IOException {
+        final int b1 = read();
+        final int b2 = read();
+        return this.byteOrder == ByteOrder.BIG_ENDIAN ? ((b1 << 8) | b2) : ((b2 << 8) | b1);
     }
 
     /**
@@ -319,7 +420,9 @@ public class StreamEditor implements Closeable {
      */
     public int readInt() throws IOException {
         final ByteBuffer buffer = ByteBuffer.allocate(4).order(this.byteOrder);
-        this.raf.read(buffer.array());
+        if (-1 == this.raf.read(buffer.array())) {
+            throw new EOFException();
+        }
         buffer.rewind();
         return buffer.getInt();
     }
@@ -344,7 +447,9 @@ public class StreamEditor implements Closeable {
      */
     public long readLong() throws IOException {
         final ByteBuffer buffer = ByteBuffer.allocate(8).order(this.byteOrder);
-        this.raf.read(buffer.array());
+        if (-1 == this.raf.read(buffer.array())) {
+            throw new EOFException();
+        }
         buffer.rewind();
         return buffer.getLong();
     }
