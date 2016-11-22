@@ -9,8 +9,9 @@
     <version>0.0.3</version>
   </parent>
 
+  <groupId>com.sdklite</groupId>
   <artifactId>sed</artifactId>
-  <version>0.0.2</version>
+  <version>0.0.3</version>
 
   <name>Stream Editor</name>
   <url>http://sed.sdklite.com</url>
