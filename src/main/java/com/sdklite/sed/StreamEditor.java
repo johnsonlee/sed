@@ -9,8 +9,6 @@ import java.io.RandomAccessFile;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 
-import org.eclipse.jetty.io.EofException;
-
 /**
  * Represents a stream editor, it could be used for binary file direct reading
  * and writing without buffer
@@ -377,7 +375,7 @@ public class StreamEditor implements Closeable {
     public char readChar() throws IOException {
         final ByteBuffer buffer = ByteBuffer.allocate(2).order(this.byteOrder);
         if (-1 == this.raf.read(buffer.array())) {
-            throw new EofException();
+            throw new EOFException();
         }
         buffer.rewind();
         return buffer.getChar();
